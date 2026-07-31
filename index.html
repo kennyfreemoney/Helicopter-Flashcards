@@ -1,15 +1,15 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-store"><title>US Helicopter Flash Cards v8</title><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-store"><title>US Helicopter Flash Cards v9</title><style>
 :root{--bg:#0f172a;--panel:#111827;--panel2:#1f2937;--text:#f8fafc;--muted:#94a3b8;--border:#334155;--blue:#0369a1;--red:#991b1b;--green:#166534;--yellow:#92400e;--accent:#38bdf8}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#1e293b,var(--bg));color:var(--text);font-family:Arial,Helvetica,sans-serif;padding:14px}.app{max-width:980px;margin:auto}header{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}h1{font-size:22px;margin:8px 0}.stats{display:flex;gap:6px;flex-wrap:wrap}.stats span{border:1px solid var(--border);border-radius:999px;padding:6px 10px;color:#cbd5e1;background:#0f172acc;font-size:13px}.card{background:#111827dd;border:1px solid var(--border);border-radius:22px;overflow:hidden;box-shadow:0 20px 60px #0008;min-height:590px}.photo{height:455px;background:#020617;display:flex;align-items:center;justify-content:center;position:relative;color:var(--muted);text-align:center;padding:20px}.photo img{width:100%;height:100%;object-fit:contain;display:block}.spinner{width:58px;height:58px;border:6px solid rgba(255,255,255,.16);border-top-color:#38bdf8;border-radius:50%;animation:spin .85s linear infinite;margin:0 auto 16px}@keyframes spin{to{transform:rotate(360deg)}}.photo-arrow{position:absolute;top:50%;transform:translateY(-50%);width:56px;height:132px;border-radius:18px;border:1px solid #ffffff22;background:#0008;color:white;font-size:40px;font-weight:900;display:flex;align-items:center;justify-content:center;z-index:3}.photo-arrow.left{left:10px}.photo-arrow.right{right:10px}.source{position:absolute;right:10px;bottom:10px;background:#000b;color:#dbeafe;padding:6px 9px;border-radius:999px;text-decoration:none;font-size:12px;border:1px solid #ffffff22}.front,.back{padding:22px;text-align:center;cursor:pointer}.front{color:var(--muted)}.back{display:none}.flipped .front{display:none}.flipped .back{display:block}.name{font-size:clamp(30px,5vw,52px);font-weight:900;line-height:1.05}.nick{font-size:clamp(20px,3vw,32px);color:var(--accent);margin:10px 0}.detail{color:#cbd5e1;font-size:17px}.buttons,.tools{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}button{background:var(--panel2);color:white;border:1px solid var(--border);border-radius:12px;padding:15px 10px;font-weight:800;cursor:pointer;font-size:16px}button:active{transform:scale(.98)}.blue{background:var(--blue)}.red{background:var(--red)}.green{background:var(--green)}.yellow{background:var(--yellow)}textarea{display:none;width:100%;height:250px;background:#020617;color:white;border:1px solid var(--border);border-radius:12px;padding:12px;margin-top:10px;font-family:Consolas,monospace}.note{color:#cbd5e1;border:1px dashed var(--border);border-radius:14px;padding:12px;margin-top:10px;line-height:1.45;background:#0f172aaa}@media(max-width:720px){body{padding:10px}.card{min-height:500px}.photo{height:340px}.buttons,.tools{grid-template-columns:1fr 1fr}#next{grid-column:span 2}.photo-arrow{width:50px;height:118px;font-size:34px}}
-</style></head><body><main class="app"><header><h1>US Helicopter Flash Cards <span style="font-size:12px;color:#38bdf8">v8</span></h1><div class="stats" id="stats"></div></header><section class="card" id="card"><div class="photo" id="photo"></div><div class="front" id="frontReveal">Tap here to reveal answer</div><div class="back" id="back"></div></section><section class="buttons"><button id="next" class="blue">Next</button><button id="right" class="green">Right</button><button id="wrong" class="red">Wrong</button></section><section class="tools"><button id="reset" class="yellow">Reset / Shuffle New Round</button><button id="preload">Preload Photos</button><button id="edit">Edit Deck</button></section><textarea id="editor"></textarea><div class="note"><strong>v8:</strong> No weighting. Cards appear exactly once per round. Reset shuffles the next round. H-60 variants are collapsed to one Black Hawk card.</div></main><script>
+</style></head><body><main class="app"><header><h1>US Helicopter Flash Cards <span style="font-size:12px;color:#38bdf8">v9</span></h1><div class="stats" id="stats"></div></header><section class="card" id="card"><div class="photo" id="photo"></div><div class="front" id="frontReveal">Tap here to reveal answer</div><div class="back" id="back"></div></section><section class="buttons"><button id="next" class="blue">Next</button><button id="right" class="green">Right</button><button id="wrong" class="red">Wrong</button></section><section class="tools"><button id="reset" class="yellow">Reset / Shuffle New Round</button><button id="preload">Preload Photos</button><button id="edit">Edit Deck</button></section><textarea id="editor"></textarea><div class="note"><strong>v9:</strong> Current/in-use or used within roughly the last 25 years. H-60 variants are one Black Hawk card, H-6 variants are one Little Bird card, MD 500/520/530 are one MD 500 Series card, and Bell 206/206L are combined. No weighting: every card appears once per round.</div></main><script>
 const DEFAULT_CARDS = [
   {
-    "id": "sikorsky-h-60",
+    "id": "sikorsky-h-60-family",
     "manufacturer": "Sikorsky",
-    "model": "H-60",
+    "model": "H-60 Family",
     "nickname": "Black Hawk",
     "country": "United States",
-    "role": "Military utility / special operations / naval family",
-    "photoQuery": "Sikorsky H-60 Black Hawk Seahawk Pave Hawk helicopter",
+    "role": "Military utility / naval / rescue family",
+    "photoQuery": "Sikorsky H-60 Black Hawk helicopter",
     "correct": 0,
     "wrong": 0
   },
@@ -58,17 +58,6 @@ const DEFAULT_CARDS = [
     "wrong": 0
   },
   {
-    "id": "bell-uh-1",
-    "manufacturer": "Bell",
-    "model": "UH-1",
-    "nickname": "Huey",
-    "country": "United States",
-    "role": "Utility",
-    "photoQuery": "Bell UH-1 Huey helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
     "id": "bell-uh-1y",
     "manufacturer": "Bell",
     "model": "UH-1Y",
@@ -76,28 +65,6 @@ const DEFAULT_CARDS = [
     "country": "United States",
     "role": "Utility",
     "photoQuery": "Bell UH-1Y Venom helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
-    "id": "bell-ah-1",
-    "manufacturer": "Bell",
-    "model": "AH-1",
-    "nickname": "Cobra",
-    "country": "United States",
-    "role": "Attack",
-    "photoQuery": "Bell AH-1 Cobra helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
-    "id": "bell-ah-1w",
-    "manufacturer": "Bell",
-    "model": "AH-1W",
-    "nickname": "Super Cobra",
-    "country": "United States",
-    "role": "Attack",
-    "photoQuery": "Bell AH-1W Super Cobra helicopter",
     "correct": 0,
     "wrong": 0
   },
@@ -113,6 +80,28 @@ const DEFAULT_CARDS = [
     "wrong": 0
   },
   {
+    "id": "bell-ah-1-family",
+    "manufacturer": "Bell",
+    "model": "AH-1 Family",
+    "nickname": "Cobra",
+    "country": "United States",
+    "role": "Attack family",
+    "photoQuery": "Bell AH-1 Cobra Super Cobra helicopter",
+    "correct": 0,
+    "wrong": 0
+  },
+  {
+    "id": "md-helicopters-h-6-family",
+    "manufacturer": "MD Helicopters",
+    "model": "H-6 Family",
+    "nickname": "Little Bird",
+    "country": "United States",
+    "role": "Special operations / light attack",
+    "photoQuery": "MH-6 AH-6 Little Bird helicopter",
+    "correct": 0,
+    "wrong": 0
+  },
+  {
     "id": "bell-oh-58",
     "manufacturer": "Bell",
     "model": "OH-58",
@@ -120,61 +109,6 @@ const DEFAULT_CARDS = [
     "country": "United States",
     "role": "Observation / scout",
     "photoQuery": "Bell OH-58 Kiowa helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
-    "id": "hughes-oh-6",
-    "manufacturer": "Hughes",
-    "model": "OH-6",
-    "nickname": "Cayuse",
-    "country": "United States",
-    "role": "Observation",
-    "photoQuery": "Hughes OH-6 Cayuse helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
-    "id": "md-helicopters-mh-6",
-    "manufacturer": "MD Helicopters",
-    "model": "MH-6",
-    "nickname": "Little Bird",
-    "country": "United States",
-    "role": "Special operations",
-    "photoQuery": "MH-6 Little Bird helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
-    "id": "md-helicopters-ah-6",
-    "manufacturer": "MD Helicopters",
-    "model": "AH-6",
-    "nickname": "Little Bird",
-    "country": "United States",
-    "role": "Light attack",
-    "photoQuery": "AH-6 Little Bird helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
-    "id": "kaman-sh-2",
-    "manufacturer": "Kaman",
-    "model": "SH-2",
-    "nickname": "Seasprite",
-    "country": "United States",
-    "role": "Naval helicopter",
-    "photoQuery": "Kaman SH-2 Seasprite helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
-    "id": "sikorsky-vh-3d",
-    "manufacturer": "Sikorsky",
-    "model": "VH-3D",
-    "nickname": "Sea King",
-    "country": "United States",
-    "role": "VIP transport",
-    "photoQuery": "Sikorsky VH-3D Sea King helicopter",
     "correct": 0,
     "wrong": 0
   },
@@ -190,68 +124,13 @@ const DEFAULT_CARDS = [
     "wrong": 0
   },
   {
-    "id": "sikorsky-r-4",
+    "id": "sikorsky-vh-3d",
     "manufacturer": "Sikorsky",
-    "model": "R-4",
-    "nickname": "Hoverfly",
+    "model": "VH-3D",
+    "nickname": "Sea King",
     "country": "United States",
-    "role": "Early military helicopter",
-    "photoQuery": "Sikorsky R-4 Hoverfly helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
-    "id": "sikorsky-h-19",
-    "manufacturer": "Sikorsky",
-    "model": "H-19",
-    "nickname": "Chickasaw",
-    "country": "United States",
-    "role": "Utility",
-    "photoQuery": "Sikorsky H-19 Chickasaw helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
-    "id": "sikorsky-h-34",
-    "manufacturer": "Sikorsky",
-    "model": "H-34",
-    "nickname": "Choctaw",
-    "country": "United States",
-    "role": "Transport",
-    "photoQuery": "Sikorsky H-34 Choctaw helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
-    "id": "piasecki-h-21",
-    "manufacturer": "Piasecki",
-    "model": "H-21",
-    "nickname": "Shawnee",
-    "country": "United States",
-    "role": "Transport",
-    "photoQuery": "Piasecki H-21 Shawnee helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
-    "id": "kaman-hh-43",
-    "manufacturer": "Kaman",
-    "model": "HH-43",
-    "nickname": "Huskie",
-    "country": "United States",
-    "role": "Rescue / firefighting",
-    "photoQuery": "Kaman HH-43 Huskie helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
-    "id": "bell-h-13",
-    "manufacturer": "Bell",
-    "model": "H-13",
-    "nickname": "Sioux",
-    "country": "United States",
-    "role": "Observation / training",
-    "photoQuery": "Bell H-13 Sioux helicopter",
+    "role": "VIP transport",
+    "photoQuery": "Sikorsky VH-3D Sea King helicopter",
     "correct": 0,
     "wrong": 0
   },
@@ -289,35 +168,13 @@ const DEFAULT_CARDS = [
     "wrong": 0
   },
   {
-    "id": "bell-47",
+    "id": "bell-206-series",
     "manufacturer": "Bell",
-    "model": "47",
-    "nickname": "",
+    "model": "206 Series",
+    "nickname": "JetRanger / LongRanger",
     "country": "United States",
     "role": "Civil light utility",
-    "photoQuery": "Bell 47 helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
-    "id": "bell-206",
-    "manufacturer": "Bell",
-    "model": "206",
-    "nickname": "JetRanger",
-    "country": "United States",
-    "role": "Civil light utility",
-    "photoQuery": "Bell 206 JetRanger helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
-    "id": "bell-206l",
-    "manufacturer": "Bell",
-    "model": "206L",
-    "nickname": "LongRanger",
-    "country": "United States",
-    "role": "Civil light utility",
-    "photoQuery": "Bell 206L LongRanger helicopter",
+    "photoQuery": "Bell 206 JetRanger LongRanger helicopter",
     "correct": 0,
     "wrong": 0
   },
@@ -366,57 +223,13 @@ const DEFAULT_CARDS = [
     "wrong": 0
   },
   {
-    "id": "bell-525",
-    "manufacturer": "Bell",
-    "model": "525",
-    "nickname": "Relentless",
-    "country": "United States",
-    "role": "Civil medium utility",
-    "photoQuery": "Bell 525 Relentless helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
-    "id": "sikorsky-s-55",
-    "manufacturer": "Sikorsky",
-    "model": "S-55",
-    "nickname": "",
-    "country": "United States",
-    "role": "Civil utility",
-    "photoQuery": "Sikorsky S-55 helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
-    "id": "sikorsky-s-58",
-    "manufacturer": "Sikorsky",
-    "model": "S-58",
-    "nickname": "",
-    "country": "United States",
-    "role": "Civil utility",
-    "photoQuery": "Sikorsky S-58 helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
     "id": "sikorsky-s-61",
     "manufacturer": "Sikorsky",
     "model": "S-61",
     "nickname": "",
     "country": "United States",
-    "role": "Civil transport",
+    "role": "Civil transport / utility",
     "photoQuery": "Sikorsky S-61 helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
-    "id": "sikorsky-s-62",
-    "manufacturer": "Sikorsky",
-    "model": "S-62",
-    "nickname": "",
-    "country": "United States",
-    "role": "Civil / rescue",
-    "photoQuery": "Sikorsky S-62 helicopter",
     "correct": 0,
     "wrong": 0
   },
@@ -443,35 +256,13 @@ const DEFAULT_CARDS = [
     "wrong": 0
   },
   {
-    "id": "md-helicopters-md-500",
+    "id": "md-helicopters-md-500-series",
     "manufacturer": "MD Helicopters",
-    "model": "MD 500",
+    "model": "MD 500 Series",
     "nickname": "",
     "country": "United States",
-    "role": "Civil light utility",
-    "photoQuery": "MD 500 helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
-    "id": "md-helicopters-md-520n",
-    "manufacturer": "MD Helicopters",
-    "model": "MD 520N",
-    "nickname": "",
-    "country": "United States",
-    "role": "Civil NOTAR light utility",
-    "photoQuery": "MD 520N helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
-    "id": "md-helicopters-md-530f",
-    "manufacturer": "MD Helicopters",
-    "model": "MD 530F",
-    "nickname": "",
-    "country": "United States",
-    "role": "Civil light utility",
-    "photoQuery": "MD 530F helicopter",
+    "role": "Civil light utility / law enforcement",
+    "photoQuery": "MD 500 MD 520N MD 530F helicopter",
     "correct": 0,
     "wrong": 0
   },
@@ -509,17 +300,6 @@ const DEFAULT_CARDS = [
     "wrong": 0
   },
   {
-    "id": "enstrom-280",
-    "manufacturer": "Enstrom",
-    "model": "280",
-    "nickname": "Shark",
-    "country": "United States",
-    "role": "Civil light utility",
-    "photoQuery": "Enstrom 280 Shark helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
     "id": "enstrom-480",
     "manufacturer": "Enstrom",
     "model": "480",
@@ -531,9 +311,9 @@ const DEFAULT_CARDS = [
     "wrong": 0
   },
   {
-    "id": "schweizer-300",
+    "id": "schweizer-300-series",
     "manufacturer": "Schweizer",
-    "model": "300",
+    "model": "300 Series",
     "nickname": "",
     "country": "United States",
     "role": "Civil training",
@@ -551,47 +331,13 @@ const DEFAULT_CARDS = [
     "photoQuery": "Schweizer 333 helicopter",
     "correct": 0,
     "wrong": 0
-  },
-  {
-    "id": "hiller-uh-12",
-    "manufacturer": "Hiller",
-    "model": "UH-12",
-    "nickname": "Raven",
-    "country": "United States",
-    "role": "Civil light utility",
-    "photoQuery": "Hiller UH-12 Raven helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
-    "id": "brantly-b-2",
-    "manufacturer": "Brantly",
-    "model": "B-2",
-    "nickname": "",
-    "country": "United States",
-    "role": "Civil light utility",
-    "photoQuery": "Brantly B-2 helicopter",
-    "correct": 0,
-    "wrong": 0
-  },
-  {
-    "id": "rotorway-exec-162f",
-    "manufacturer": "RotorWay",
-    "model": "Exec 162F",
-    "nickname": "",
-    "country": "United States",
-    "role": "Kit helicopter",
-    "photoQuery": "RotorWay Exec 162F helicopter",
-    "correct": 0,
-    "wrong": 0
   }
 ];
-const CARD_KEY='usHelicopterFlashCards.v8.cards'; const IMAGE_KEY='usHelicopterFlashCards.v8.images'; const ORDER_KEY='usHelicopterFlashCards.v8.order'; const POS_KEY='usHelicopterFlashCards.v8.position';
+const CARD_KEY='usHelicopterFlashCards.v9.cards'; const IMAGE_KEY='usHelicopterFlashCards.v9.images'; const ORDER_KEY='usHelicopterFlashCards.v9.order'; const POS_KEY='usHelicopterFlashCards.v9.position';
 let cards=safeJSON(localStorage.getItem(CARD_KEY),DEFAULT_CARDS), images=safeJSON(localStorage.getItem(IMAGE_KEY),{}), order=safeJSON(localStorage.getItem(ORDER_KEY),DEFAULT_CARDS.map((_,i)=>i)), position=Number(localStorage.getItem(POS_KEY)||0), flipped=false, requestToken=0;
-const $=id=>document.getElementById(id);
-function safeJSON(v,f){try{return v?JSON.parse(v):f}catch{return f}}function saveCards(){localStorage.setItem(CARD_KEY,JSON.stringify(cards))}function saveImages(){localStorage.setItem(IMAGE_KEY,JSON.stringify(images))}function saveRound(){localStorage.setItem(ORDER_KEY,JSON.stringify(order));localStorage.setItem(POS_KEY,String(position))}function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}function loadingMarkup(){return '<div><div class="spinner"></div><div>Loading photo...</div></div>'}function currentIndex(){if(position>=order.length)position=order.length-1;if(position<0)position=0;return order[position]}function currentCard(){return cards[currentIndex()]}function totalRight(){return cards.reduce((s,c)=>s+Number(c.correct||0),0)}function totalWrong(){return cards.reduce((s,c)=>s+Number(c.wrong||0),0)}function accuracy(){const r=totalRight(),w=totalWrong(),t=r+w;return t?Math.round(r/t*100):0}function updateStats(){$('stats').innerHTML='<span>Card: '+Math.min(position+1,order.length)+'/'+order.length+'</span><span>Right: '+totalRight()+'</span><span>Wrong: '+totalWrong()+'</span><span>Accuracy: '+accuracy()+'%</span>'}
-function cleanStoredDataIfNeeded(){const ids=new Set(cards.map(c=>c.id)); order=order.filter(i=>cards[i]); if(order.length!==cards.length || new Set(order).size!==order.length){order=cards.map((_,i)=>i);position=0;saveRound()} for(const k of Object.keys(images)){if(!ids.has(k))delete images[k]} saveImages()}
-function ensurePhotoState(card){if(!images[card.id])images[card.id]={photos:[],photoIndex:0,nextOffset:0}; if(!Array.isArray(images[card.id].photos))images[card.id]={photos:images[card.id].url?[{url:images[card.id].url,page:images[card.id].page||''}]:[],photoIndex:0,nextOffset:images[card.id].offset||0}; return images[card.id]}
+const $=id=>document.getElementById(id);function safeJSON(v,f){try{return v?JSON.parse(v):f}catch{return f}}function saveCards(){localStorage.setItem(CARD_KEY,JSON.stringify(cards))}function saveImages(){localStorage.setItem(IMAGE_KEY,JSON.stringify(images))}function saveRound(){localStorage.setItem(ORDER_KEY,JSON.stringify(order));localStorage.setItem(POS_KEY,String(position))}function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}function loadingMarkup(){return '<div><div class="spinner"></div><div>Loading photo...</div></div>'}function currentIndex(){if(position>=order.length)position=order.length-1;if(position<0)position=0;return order[position]}function currentCard(){return cards[currentIndex()]}function totalRight(){return cards.reduce((s,c)=>s+Number(c.correct||0),0)}function totalWrong(){return cards.reduce((s,c)=>s+Number(c.wrong||0),0)}function accuracy(){const r=totalRight(),w=totalWrong(),t=r+w;return t?Math.round(r/t*100):0}function updateStats(){$('stats').innerHTML='<span>Card: '+Math.min(position+1,order.length)+'/'+order.length+'</span><span>Right: '+totalRight()+'</span><span>Wrong: '+totalWrong()+'</span><span>Accuracy: '+accuracy()+'%</span>'}
+function cleanStoredDataIfNeeded(){const ids=new Set(cards.map(c=>c.id));order=order.filter(i=>cards[i]);if(order.length!==cards.length||new Set(order).size!==order.length){order=cards.map((_,i)=>i);position=0;saveRound()}for(const k of Object.keys(images)){if(!ids.has(k))delete images[k]}saveImages()}
+function ensurePhotoState(card){if(!images[card.id])images[card.id]={photos:[],photoIndex:0,nextOffset:0};if(!Array.isArray(images[card.id].photos))images[card.id]={photos:images[card.id].url?[{url:images[card.id].url,page:images[card.id].page||''}]:[],photoIndex:0,nextOffset:images[card.id].offset||0};return images[card.id]}
 function overlayArrows(){return '<button class="photo-arrow left" id="photoPrev">‹</button><button class="photo-arrow right" id="photoNext">›</button>'}function attachPhotoArrows(){const l=$('photoPrev'),r=$('photoNext');if(l)l.onclick=e=>{e.preventDefault();e.stopPropagation();previousPhoto()};if(r)r.onclick=e=>{e.preventDefault();e.stopPropagation();nextPhoto()}}
 function render(){if(!cards.length)return;if(position>=order.length){position=order.length-1;saveRound()}const card=currentCard();$('card').classList.toggle('flipped',flipped);renderImage(card);$('back').innerHTML='<div class="name">'+esc(card.manufacturer)+' '+esc(card.model)+'</div>'+(card.nickname?'<div class="nick">&quot;'+esc(card.nickname)+'&quot;</div>':'')+'<div class="detail">'+esc(card.country)+' • '+esc(card.role)+'</div>';updateStats()}
 async function renderImage(card){const token=++requestToken,st=ensurePhotoState(card),p=st.photos[st.photoIndex];if(p&&p.url){$('photo').innerHTML='<img src="'+esc(p.url)+'" alt="Helicopter photo">'+overlayArrows()+'<a class="source" target="_blank" rel="noopener" href="'+esc(p.page)+'">Wikimedia Commons</a>';attachPhotoArrows();return}$('photo').innerHTML=loadingMarkup();await fetchPhoto(card,st.nextOffset||0);if(token===requestToken)renderImage(card)}
