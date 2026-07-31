@@ -1,0 +1,1186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>Helicopter Flash Cards</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <style>
+    :root {
+      --bg:#0f172a;--panel:#111827;--panel2:#1f2937;--text:#f8fafc;--muted:#94a3b8;
+      --border:#334155;--blue:#0369a1;--red:#991b1b;--green:#166534;--yellow:#92400e;--accent:#38bdf8;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:radial-gradient(circle at top,#1e293b,var(--bg));color:var(--text);font-family:Arial,Helvetica,sans-serif}
+    body{padding:14px;padding-bottom:calc(14px + env(safe-area-inset-bottom));}
+    .app{max-width:980px;margin:0 auto}
+    header{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+    h1{font-size:22px;margin:8px 0}
+    .stats{display:flex;gap:6px;flex-wrap:wrap}
+    .stats span{border:1px solid var(--border);border-radius:999px;padding:6px 10px;color:#cbd5e1;background:#0f172acc;font-size:13px}
+    .card{background:#111827dd;border:1px solid var(--border);border-radius:22px;overflow:hidden;box-shadow:0 20px 60px #0008;cursor:pointer;min-height:590px}
+    .photo{height:455px;background:#020617;display:flex;align-items:center;justify-content:center;position:relative;color:var(--muted);text-align:center;padding:20px;line-height:1.4}
+    .photo img{width:100%;height:100%;object-fit:contain;display:block}
+    .source{position:absolute;right:10px;bottom:10px;background:#000b;color:#dbeafe;padding:6px 9px;border-radius:999px;text-decoration:none;font-size:12px;border:1px solid #ffffff22}
+    .front,.back{padding:22px;text-align:center}
+    .front{color:var(--muted)}
+    .back{display:none}
+    .flipped .front{display:none}
+    .flipped .back{display:block}
+    .name{font-size:clamp(30px,5vw,52px);font-weight:900;line-height:1.05}
+    .nick{font-size:clamp(20px,3vw,32px);color:var(--accent);margin:10px 0}
+    .detail{color:#cbd5e1;font-size:17px}
+    .buttons,.tools{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:10px}
+    button{background:var(--panel2);color:white;border:1px solid var(--border);border-radius:12px;padding:13px 10px;font-weight:800;cursor:pointer;font-size:14px}
+    button:active{transform:scale(.98)}
+    .blue{background:var(--blue)}.red{background:var(--red)}.green{background:var(--green)}.yellow{background:var(--yellow)}
+    textarea{display:none;width:100%;height:250px;background:#020617;color:white;border:1px solid var(--border);border-radius:12px;padding:12px;margin-top:10px;font-family:Consolas,monospace}
+    .note{color:#cbd5e1;border:1px dashed var(--border);border-radius:14px;padding:12px;margin-top:10px;line-height:1.45;background:#0f172aaa}
+    @media(max-width:720px){body{padding:10px}.card{min-height:500px}.photo{height:340px}.buttons,.tools{grid-template-columns:1fr 1fr}.buttons button:nth-child(3){grid-column:span 2}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <h1>Helicopter Flash Cards</h1>
+      <div class="stats" id="stats"></div>
+    </header>
+
+    <section class="card" id="card" title="Tap to flip">
+      <div class="photo" id="photo"></div>
+      <div class="front">Tap the card or press Space to reveal the answer.</div>
+      <div class="back" id="back"></div>
+    </section>
+
+    <section class="buttons">
+      <button id="prev">Previous</button>
+      <button class="blue" id="flip">Flip</button>
+      <button id="next">Next</button>
+      <button class="red" id="practice">Need Practice</button>
+      <button class="green" id="know">Know It</button>
+    </section>
+
+    <section class="tools">
+      <button class="yellow" id="shuffle">Shuffle Next</button>
+      <button id="newpic">Find New Photo</button>
+      <button id="preload">Preload Photos</button>
+      <button id="reset">Reset Progress</button>
+      <button id="edit">Edit Deck</button>
+    </section>
+
+    <textarea id="editor" spellcheck="false"></textarea>
+    <div class="note"><strong>Hosted app version:</strong> upload this folder to GitHub Pages, Netlify, or Cloudflare Pages. Real helicopter photos load from Wikimedia Commons. Progress saves in this browser.</div>
+  </main>
+<script>
+const DEFAULT_CARDS = [
+  {
+    "id": "sikorsky-uh-60",
+    "manufacturer": "Sikorsky",
+    "model": "UH-60",
+    "nickname": "Black Hawk",
+    "country": "United States",
+    "role": "Utility",
+    "photoQuery": "Sikorsky UH-60 Black Hawk helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "boeing-ah-64",
+    "manufacturer": "Boeing",
+    "model": "AH-64",
+    "nickname": "Apache",
+    "country": "United States",
+    "role": "Attack",
+    "photoQuery": "Boeing AH-64 Apache helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "boeing-ch-47",
+    "manufacturer": "Boeing",
+    "model": "CH-47",
+    "nickname": "Chinook",
+    "country": "United States",
+    "role": "Heavy-lift transport",
+    "photoQuery": "Boeing CH-47 Chinook helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "bell-uh-1",
+    "manufacturer": "Bell",
+    "model": "UH-1",
+    "nickname": "Huey",
+    "country": "United States",
+    "role": "Utility",
+    "photoQuery": "Bell UH-1 Huey helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "bell-ah-1z",
+    "manufacturer": "Bell",
+    "model": "AH-1Z",
+    "nickname": "Viper",
+    "country": "United States",
+    "role": "Attack",
+    "photoQuery": "Bell AH-1Z Viper helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "bell-ah-1",
+    "manufacturer": "Bell",
+    "model": "AH-1",
+    "nickname": "Cobra",
+    "country": "United States",
+    "role": "Attack",
+    "photoQuery": "Bell AH-1 Cobra helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "sikorsky-sh-60",
+    "manufacturer": "Sikorsky",
+    "model": "SH-60",
+    "nickname": "Seahawk",
+    "country": "United States",
+    "role": "Naval utility",
+    "photoQuery": "Sikorsky SH-60 Seahawk helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "sikorsky-mh-60r",
+    "manufacturer": "Sikorsky",
+    "model": "MH-60R",
+    "nickname": "Seahawk",
+    "country": "United States",
+    "role": "Anti-submarine warfare",
+    "photoQuery": "Sikorsky MH-60R Seahawk helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "sikorsky-ch-53e",
+    "manufacturer": "Sikorsky",
+    "model": "CH-53E",
+    "nickname": "Super Stallion",
+    "country": "United States",
+    "role": "Heavy-lift transport",
+    "photoQuery": "Sikorsky CH-53E Super Stallion helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "sikorsky-ch-53k",
+    "manufacturer": "Sikorsky",
+    "model": "CH-53K",
+    "nickname": "King Stallion",
+    "country": "United States",
+    "role": "Heavy-lift transport",
+    "photoQuery": "Sikorsky CH-53K King Stallion helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "bell-oh-58",
+    "manufacturer": "Bell",
+    "model": "OH-58",
+    "nickname": "Kiowa",
+    "country": "United States",
+    "role": "Observation / scout",
+    "photoQuery": "Bell OH-58 Kiowa helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "md-helicopters-mh-6",
+    "manufacturer": "MD Helicopters",
+    "model": "MH-6",
+    "nickname": "Little Bird",
+    "country": "United States",
+    "role": "Special operations",
+    "photoQuery": "MD Helicopters MH-6 Little Bird helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "hughes-oh-6",
+    "manufacturer": "Hughes",
+    "model": "OH-6",
+    "nickname": "Cayuse",
+    "country": "United States",
+    "role": "Observation",
+    "photoQuery": "Hughes OH-6 Cayuse helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "sikorsky-vh-3d",
+    "manufacturer": "Sikorsky",
+    "model": "VH-3D",
+    "nickname": "Sea King",
+    "country": "United States",
+    "role": "VIP transport",
+    "photoQuery": "Sikorsky VH-3D Sea King helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "sikorsky-h-34",
+    "manufacturer": "Sikorsky",
+    "model": "H-34",
+    "nickname": "Choctaw",
+    "country": "United States",
+    "role": "Transport",
+    "photoQuery": "Sikorsky H-34 Choctaw helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "sikorsky-h-19",
+    "manufacturer": "Sikorsky",
+    "model": "H-19",
+    "nickname": "Chickasaw",
+    "country": "United States",
+    "role": "Utility",
+    "photoQuery": "Sikorsky H-19 Chickasaw helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "sikorsky-s-62",
+    "manufacturer": "Sikorsky",
+    "model": "S-62",
+    "nickname": "",
+    "country": "United States",
+    "role": "Civil / rescue",
+    "photoQuery": "Sikorsky S-62 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "sikorsky-s-76",
+    "manufacturer": "Sikorsky",
+    "model": "S-76",
+    "nickname": "Spirit",
+    "country": "United States",
+    "role": "Civil utility",
+    "photoQuery": "Sikorsky S-76 Spirit helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "sikorsky-s-92",
+    "manufacturer": "Sikorsky",
+    "model": "S-92",
+    "nickname": "",
+    "country": "United States",
+    "role": "Civil transport",
+    "photoQuery": "Sikorsky S-92 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "robinson-r22",
+    "manufacturer": "Robinson",
+    "model": "R22",
+    "nickname": "",
+    "country": "United States",
+    "role": "Training / light utility",
+    "photoQuery": "Robinson R22 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "robinson-r44",
+    "manufacturer": "Robinson",
+    "model": "R44",
+    "nickname": "Raven",
+    "country": "United States",
+    "role": "Light utility",
+    "photoQuery": "Robinson R44 Raven helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "robinson-r66",
+    "manufacturer": "Robinson",
+    "model": "R66",
+    "nickname": "",
+    "country": "United States",
+    "role": "Light utility",
+    "photoQuery": "Robinson R66 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "md-helicopters-md-500",
+    "manufacturer": "MD Helicopters",
+    "model": "MD 500",
+    "nickname": "Defender",
+    "country": "United States",
+    "role": "Light utility / scout",
+    "photoQuery": "MD Helicopters MD 500 Defender helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "md-helicopters-md-902",
+    "manufacturer": "MD Helicopters",
+    "model": "MD 902",
+    "nickname": "Explorer",
+    "country": "United States",
+    "role": "Utility / EMS",
+    "photoQuery": "MD Helicopters MD 902 Explorer helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "kaman-k-max",
+    "manufacturer": "Kaman",
+    "model": "K-MAX",
+    "nickname": "",
+    "country": "United States",
+    "role": "External lift",
+    "photoQuery": "Kaman K-MAX helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "kamov-ka-50",
+    "manufacturer": "Kamov",
+    "model": "Ka-50",
+    "nickname": "Black Shark",
+    "country": "Russia",
+    "role": "Attack",
+    "photoQuery": "Kamov Ka-50 Black Shark helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "kamov-ka-52",
+    "manufacturer": "Kamov",
+    "model": "Ka-52",
+    "nickname": "Alligator",
+    "country": "Russia",
+    "role": "Attack",
+    "photoQuery": "Kamov Ka-52 Alligator helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "kamov-ka-27",
+    "manufacturer": "Kamov",
+    "model": "Ka-27",
+    "nickname": "Helix",
+    "country": "Russia",
+    "role": "Naval ASW",
+    "photoQuery": "Kamov Ka-27 Helix helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "kamov-ka-29",
+    "manufacturer": "Kamov",
+    "model": "Ka-29",
+    "nickname": "Helix-B",
+    "country": "Russia",
+    "role": "Naval assault transport",
+    "photoQuery": "Kamov Ka-29 Helix-B helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "kamov-ka-32",
+    "manufacturer": "Kamov",
+    "model": "Ka-32",
+    "nickname": "Helix-C",
+    "country": "Russia",
+    "role": "Utility",
+    "photoQuery": "Kamov Ka-32 Helix-C helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "mil-mi-2",
+    "manufacturer": "Mil",
+    "model": "Mi-2",
+    "nickname": "Hoplite",
+    "country": "Russia / Poland",
+    "role": "Light utility",
+    "photoQuery": "Mil Mi-2 Hoplite helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "mil-mi-4",
+    "manufacturer": "Mil",
+    "model": "Mi-4",
+    "nickname": "Hound",
+    "country": "Soviet Union",
+    "role": "Transport",
+    "photoQuery": "Mil Mi-4 Hound helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "mil-mi-6",
+    "manufacturer": "Mil",
+    "model": "Mi-6",
+    "nickname": "Hook",
+    "country": "Soviet Union",
+    "role": "Heavy-lift transport",
+    "photoQuery": "Mil Mi-6 Hook helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "mil-mi-8",
+    "manufacturer": "Mil",
+    "model": "Mi-8",
+    "nickname": "Hip",
+    "country": "Russia",
+    "role": "Transport",
+    "photoQuery": "Mil Mi-8 Hip helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "mil-mi-17",
+    "manufacturer": "Mil",
+    "model": "Mi-17",
+    "nickname": "Hip-H",
+    "country": "Russia",
+    "role": "Transport",
+    "photoQuery": "Mil Mi-17 Hip-H helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "mil-mi-24",
+    "manufacturer": "Mil",
+    "model": "Mi-24",
+    "nickname": "Hind",
+    "country": "Russia",
+    "role": "Attack / transport",
+    "photoQuery": "Mil Mi-24 Hind helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "mil-mi-26",
+    "manufacturer": "Mil",
+    "model": "Mi-26",
+    "nickname": "Halo",
+    "country": "Russia",
+    "role": "Heavy-lift transport",
+    "photoQuery": "Mil Mi-26 Halo helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "mil-mi-28",
+    "manufacturer": "Mil",
+    "model": "Mi-28",
+    "nickname": "Havoc",
+    "country": "Russia",
+    "role": "Attack",
+    "photoQuery": "Mil Mi-28 Havoc helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "mil-mi-35",
+    "manufacturer": "Mil",
+    "model": "Mi-35",
+    "nickname": "Hind-E",
+    "country": "Russia",
+    "role": "Attack / transport",
+    "photoQuery": "Mil Mi-35 Hind-E helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "kazan-ansat",
+    "manufacturer": "Kazan",
+    "model": "Ansat",
+    "nickname": "",
+    "country": "Russia",
+    "role": "Utility",
+    "photoQuery": "Kazan Ansat helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "eurocopter-ec120",
+    "manufacturer": "Eurocopter",
+    "model": "EC120",
+    "nickname": "Colibri",
+    "country": "France",
+    "role": "Light utility",
+    "photoQuery": "Eurocopter EC120 Colibri helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "airbus-h125",
+    "manufacturer": "Airbus",
+    "model": "H125",
+    "nickname": "AStar",
+    "country": "France",
+    "role": "Light utility",
+    "photoQuery": "Airbus H125 AStar helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "airbus-h130",
+    "manufacturer": "Airbus",
+    "model": "H130",
+    "nickname": "",
+    "country": "France",
+    "role": "Light utility",
+    "photoQuery": "Airbus H130 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "airbus-h135",
+    "manufacturer": "Airbus",
+    "model": "H135",
+    "nickname": "",
+    "country": "Germany",
+    "role": "Utility / EMS",
+    "photoQuery": "Airbus H135 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "airbus-h145",
+    "manufacturer": "Airbus",
+    "model": "H145",
+    "nickname": "",
+    "country": "Germany",
+    "role": "Utility / EMS",
+    "photoQuery": "Airbus H145 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "eurocopter-as365",
+    "manufacturer": "Eurocopter",
+    "model": "AS365",
+    "nickname": "Dauphin",
+    "country": "France",
+    "role": "Utility",
+    "photoQuery": "Eurocopter AS365 Dauphin helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "airbus-h155",
+    "manufacturer": "Airbus",
+    "model": "H155",
+    "nickname": "",
+    "country": "France",
+    "role": "Utility",
+    "photoQuery": "Airbus H155 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "airbus-as332",
+    "manufacturer": "Airbus",
+    "model": "AS332",
+    "nickname": "Super Puma",
+    "country": "France",
+    "role": "Transport",
+    "photoQuery": "Airbus AS332 Super Puma helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "airbus-h215",
+    "manufacturer": "Airbus",
+    "model": "H215",
+    "nickname": "Super Puma",
+    "country": "France",
+    "role": "Transport",
+    "photoQuery": "Airbus H215 Super Puma helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "airbus-h225",
+    "manufacturer": "Airbus",
+    "model": "H225",
+    "nickname": "Super Puma",
+    "country": "France",
+    "role": "Transport",
+    "photoQuery": "Airbus H225 Super Puma helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "aérospatiale-sa-342",
+    "manufacturer": "Aérospatiale",
+    "model": "SA 342",
+    "nickname": "Gazelle",
+    "country": "France",
+    "role": "Scout / attack",
+    "photoQuery": "Aérospatiale SA 342 Gazelle helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "sud-aviation-se-3130",
+    "manufacturer": "Sud Aviation",
+    "model": "SE 3130",
+    "nickname": "Alouette II",
+    "country": "France",
+    "role": "Light utility",
+    "photoQuery": "Sud Aviation SE 3130 Alouette II helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "aérospatiale-sa-316",
+    "manufacturer": "Aérospatiale",
+    "model": "SA 316",
+    "nickname": "Alouette III",
+    "country": "France",
+    "role": "Light utility",
+    "photoQuery": "Aérospatiale SA 316 Alouette III helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "aérospatiale-sa-321",
+    "manufacturer": "Aérospatiale",
+    "model": "SA 321",
+    "nickname": "Super Frelon",
+    "country": "France",
+    "role": "Heavy transport",
+    "photoQuery": "Aérospatiale SA 321 Super Frelon helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "eurocopter-ec665",
+    "manufacturer": "Eurocopter",
+    "model": "EC665",
+    "nickname": "Tiger",
+    "country": "France / Germany",
+    "role": "Attack",
+    "photoQuery": "Eurocopter EC665 Tiger helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "nhindustries-nh90",
+    "manufacturer": "NHIndustries",
+    "model": "NH90",
+    "nickname": "Caiman",
+    "country": "Europe",
+    "role": "Transport / naval",
+    "photoQuery": "NHIndustries NH90 Caiman helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "mbb-bo-105",
+    "manufacturer": "MBB",
+    "model": "Bo 105",
+    "nickname": "",
+    "country": "Germany",
+    "role": "Light utility",
+    "photoQuery": "MBB Bo 105 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "mbb--kawasaki-bk-117",
+    "manufacturer": "MBB / Kawasaki",
+    "model": "BK 117",
+    "nickname": "",
+    "country": "Germany / Japan",
+    "role": "Utility / EMS",
+    "photoQuery": "MBB / Kawasaki BK 117 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "leonardo-aw109",
+    "manufacturer": "Leonardo",
+    "model": "AW109",
+    "nickname": "Power",
+    "country": "Italy",
+    "role": "Light utility",
+    "photoQuery": "Leonardo AW109 Power helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "leonardo-aw119",
+    "manufacturer": "Leonardo",
+    "model": "AW119",
+    "nickname": "Koala",
+    "country": "Italy",
+    "role": "Light utility",
+    "photoQuery": "Leonardo AW119 Koala helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "leonardo-aw139",
+    "manufacturer": "Leonardo",
+    "model": "AW139",
+    "nickname": "",
+    "country": "Italy",
+    "role": "Utility / transport",
+    "photoQuery": "Leonardo AW139 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "leonardo-aw149",
+    "manufacturer": "Leonardo",
+    "model": "AW149",
+    "nickname": "",
+    "country": "Italy",
+    "role": "Military utility",
+    "photoQuery": "Leonardo AW149 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "leonardo-aw159",
+    "manufacturer": "Leonardo",
+    "model": "AW159",
+    "nickname": "Wildcat",
+    "country": "United Kingdom",
+    "role": "Naval / battlefield utility",
+    "photoQuery": "Leonardo AW159 Wildcat helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "leonardo-aw169",
+    "manufacturer": "Leonardo",
+    "model": "AW169",
+    "nickname": "",
+    "country": "Italy",
+    "role": "Utility",
+    "photoQuery": "Leonardo AW169 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "leonardo-aw189",
+    "manufacturer": "Leonardo",
+    "model": "AW189",
+    "nickname": "",
+    "country": "Italy",
+    "role": "Transport",
+    "photoQuery": "Leonardo AW189 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "leonardo-aw101",
+    "manufacturer": "Leonardo",
+    "model": "AW101",
+    "nickname": "Merlin",
+    "country": "Italy / United Kingdom",
+    "role": "Medium-lift / naval",
+    "photoQuery": "Leonardo AW101 Merlin helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "agusta-a129",
+    "manufacturer": "Agusta",
+    "model": "A129",
+    "nickname": "Mangusta",
+    "country": "Italy",
+    "role": "Attack",
+    "photoQuery": "Agusta A129 Mangusta helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "westland-lynx",
+    "manufacturer": "Westland",
+    "model": "Lynx",
+    "nickname": "",
+    "country": "United Kingdom",
+    "role": "Utility / naval",
+    "photoQuery": "Westland Lynx helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "westland-sea-king",
+    "manufacturer": "Westland",
+    "model": "Sea King",
+    "nickname": "",
+    "country": "United Kingdom",
+    "role": "Naval / rescue",
+    "photoQuery": "Westland Sea King helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "westland-wessex",
+    "manufacturer": "Westland",
+    "model": "Wessex",
+    "nickname": "",
+    "country": "United Kingdom",
+    "role": "Utility",
+    "photoQuery": "Westland Wessex helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "westland-scout",
+    "manufacturer": "Westland",
+    "model": "Scout",
+    "nickname": "",
+    "country": "United Kingdom",
+    "role": "Light utility",
+    "photoQuery": "Westland Scout helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "westland-whirlwind",
+    "manufacturer": "Westland",
+    "model": "Whirlwind",
+    "nickname": "",
+    "country": "United Kingdom",
+    "role": "Utility",
+    "photoQuery": "Westland Whirlwind helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "bell-206",
+    "manufacturer": "Bell",
+    "model": "206",
+    "nickname": "JetRanger",
+    "country": "United States / Canada",
+    "role": "Light utility",
+    "photoQuery": "Bell 206 JetRanger helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "bell-407",
+    "manufacturer": "Bell",
+    "model": "407",
+    "nickname": "",
+    "country": "United States / Canada",
+    "role": "Light utility",
+    "photoQuery": "Bell 407 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "bell-412",
+    "manufacturer": "Bell",
+    "model": "412",
+    "nickname": "",
+    "country": "United States / Canada",
+    "role": "Utility",
+    "photoQuery": "Bell 412 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "bell-429",
+    "manufacturer": "Bell",
+    "model": "429",
+    "nickname": "GlobalRanger",
+    "country": "Canada",
+    "role": "Light utility",
+    "photoQuery": "Bell 429 GlobalRanger helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "bell-505",
+    "manufacturer": "Bell",
+    "model": "505",
+    "nickname": "Jet Ranger X",
+    "country": "Canada",
+    "role": "Light utility",
+    "photoQuery": "Bell 505 Jet Ranger X helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "bell-525",
+    "manufacturer": "Bell",
+    "model": "525",
+    "nickname": "Relentless",
+    "country": "United States",
+    "role": "Medium utility",
+    "photoQuery": "Bell 525 Relentless helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "bell-boeing-v-22",
+    "manufacturer": "Bell Boeing",
+    "model": "V-22",
+    "nickname": "Osprey",
+    "country": "United States",
+    "role": "Tiltrotor transport",
+    "photoQuery": "Bell Boeing V-22 Osprey helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "kamov-ka-226",
+    "manufacturer": "Kamov",
+    "model": "Ka-226",
+    "nickname": "Sergei",
+    "country": "Russia",
+    "role": "Light utility",
+    "photoQuery": "Kamov Ka-226 Sergei helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "harbin-z-9",
+    "manufacturer": "Harbin",
+    "model": "Z-9",
+    "nickname": "Haitun",
+    "country": "China",
+    "role": "Utility",
+    "photoQuery": "Harbin Z-9 Haitun helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "changhe-z-10",
+    "manufacturer": "Changhe",
+    "model": "Z-10",
+    "nickname": "",
+    "country": "China",
+    "role": "Attack",
+    "photoQuery": "Changhe Z-10 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "changhe-z-11",
+    "manufacturer": "Changhe",
+    "model": "Z-11",
+    "nickname": "",
+    "country": "China",
+    "role": "Light utility",
+    "photoQuery": "Changhe Z-11 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "changhe-z-18",
+    "manufacturer": "Changhe",
+    "model": "Z-18",
+    "nickname": "",
+    "country": "China",
+    "role": "Transport",
+    "photoQuery": "Changhe Z-18 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "harbin-z-19",
+    "manufacturer": "Harbin",
+    "model": "Z-19",
+    "nickname": "Black Whirlwind",
+    "country": "China",
+    "role": "Reconnaissance / attack",
+    "photoQuery": "Harbin Z-19 Black Whirlwind helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "harbin-z-20",
+    "manufacturer": "Harbin",
+    "model": "Z-20",
+    "nickname": "",
+    "country": "China",
+    "role": "Utility",
+    "photoQuery": "Harbin Z-20 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "kaman-sh-2",
+    "manufacturer": "Kaman",
+    "model": "SH-2",
+    "nickname": "Seasprite",
+    "country": "United States",
+    "role": "Naval",
+    "photoQuery": "Kaman SH-2 Seasprite helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "kai-kuh-1",
+    "manufacturer": "KAI",
+    "model": "KUH-1",
+    "nickname": "Surion",
+    "country": "South Korea",
+    "role": "Utility",
+    "photoQuery": "KAI KUH-1 Surion helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "kai-lah",
+    "manufacturer": "KAI",
+    "model": "LAH",
+    "nickname": "Light Armed Helicopter",
+    "country": "South Korea",
+    "role": "Light attack",
+    "photoQuery": "KAI LAH Light Armed Helicopter helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "hal-lch",
+    "manufacturer": "HAL",
+    "model": "LCH",
+    "nickname": "Prachand",
+    "country": "India",
+    "role": "Attack",
+    "photoQuery": "HAL LCH Prachand helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "hal-dhruv",
+    "manufacturer": "HAL",
+    "model": "Dhruv",
+    "nickname": "ALH",
+    "country": "India",
+    "role": "Utility",
+    "photoQuery": "HAL Dhruv ALH helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "hal-chetak",
+    "manufacturer": "HAL",
+    "model": "Chetak",
+    "nickname": "",
+    "country": "India",
+    "role": "Light utility",
+    "photoQuery": "HAL Chetak helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "hal-cheetah",
+    "manufacturer": "HAL",
+    "model": "Cheetah",
+    "nickname": "",
+    "country": "India",
+    "role": "Light utility",
+    "photoQuery": "HAL Cheetah helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "denel-ah-2",
+    "manufacturer": "Denel",
+    "model": "AH-2",
+    "nickname": "Rooivalk",
+    "country": "South Africa",
+    "role": "Attack",
+    "photoQuery": "Denel AH-2 Rooivalk helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "atlas-oryx",
+    "manufacturer": "Atlas",
+    "model": "Oryx",
+    "nickname": "",
+    "country": "South Africa",
+    "role": "Utility",
+    "photoQuery": "Atlas Oryx helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "hiller-uh-12",
+    "manufacturer": "Hiller",
+    "model": "UH-12",
+    "nickname": "Raven",
+    "country": "United States",
+    "role": "Light utility",
+    "photoQuery": "Hiller UH-12 Raven helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "enstrom-480",
+    "manufacturer": "Enstrom",
+    "model": "480",
+    "nickname": "",
+    "country": "United States",
+    "role": "Light utility / training",
+    "photoQuery": "Enstrom 480 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "guimbal-cabri-g2",
+    "manufacturer": "Guimbal",
+    "model": "Cabri G2",
+    "nickname": "",
+    "country": "France",
+    "role": "Training",
+    "photoQuery": "Guimbal Cabri G2 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "schweizer-300",
+    "manufacturer": "Schweizer",
+    "model": "300",
+    "nickname": "",
+    "country": "United States",
+    "role": "Training",
+    "photoQuery": "Schweizer 300 helicopter",
+    "status": "learning"
+  },
+  {
+    "id": "schweizer-333",
+    "manufacturer": "Schweizer",
+    "model": "333",
+    "nickname": "",
+    "country": "United States",
+    "role": "Light utility",
+    "photoQuery": "Schweizer 333 helicopter",
+    "status": "learning"
+  }
+];
+const CARD_KEY = 'helicopterFlashCards.hosted.cards.v1';
+const IMAGE_KEY = 'helicopterFlashCards.hosted.images.v1';
+let cards = safeJSON(localStorage.getItem(CARD_KEY), DEFAULT_CARDS);
+let images = safeJSON(localStorage.getItem(IMAGE_KEY), {});
+let index = 0;
+let flipped = false;
+let historyStack = [];
+let requestToken = 0;
+const $ = (id) => document.getElementById(id);
+function safeJSON(value, fallback) { try { return value ? JSON.parse(value) : fallback; } catch { return fallback; } }
+function saveCards() { localStorage.setItem(CARD_KEY, JSON.stringify(cards)); }
+function saveImages() { localStorage.setItem(IMAGE_KEY, JSON.stringify(images)); }
+function esc(value) { return String(value ?? '').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
+function weight(card) { return card.status === 'practice' ? 5 : card.status === 'know' ? 1 : 2; }
+function weightedRandomIndex() {
+  let total = cards.reduce((sum, card) => sum + weight(card), 0);
+  let pick = Math.random() * total;
+  for (let i = 0; i < cards.length; i++) { pick -= weight(cards[i]); if (pick <= 0) return i; }
+  return cards.length - 1;
+}
+function updateStats() {
+  const know = cards.filter(c => c.status === 'know').length;
+  const practice = cards.filter(c => c.status === 'practice').length;
+  const learning = cards.length - know - practice;
+  $('stats').innerHTML = `<span>Total: ${cards.length}</span><span>Know It: ${know}</span><span>Learning: ${learning}</span><span>Need Practice: ${practice}</span><span>Card ${index+1}/${cards.length}</span>`;
+}
+function render() {
+  if (!cards.length) return;
+  const card = cards[index];
+  $('card').classList.toggle('flipped', flipped);
+  renderImage(card);
+  $('back').innerHTML = `<div class="name">${esc(card.manufacturer)} ${esc(card.model)}</div>${card.nickname ? `<div class="nick">&quot;${esc(card.nickname)}&quot;</div>` : ''}<div class="detail">${esc(card.country)} • ${esc(card.role)}</div>`;
+  updateStats();
+}
+async function renderImage(card) {
+  const token = ++requestToken;
+  const cached = images[card.id];
+  if (cached && cached.url) {
+    $('photo').innerHTML = `<img src="${esc(cached.url)}" alt="${esc(card.manufacturer + ' ' + card.model)}"><a class="source" target="_blank" rel="noopener" href="${esc(cached.page)}">Wikimedia Commons</a>`;
+    return;
+  }
+  $('photo').innerHTML = `Finding real photo on Wikimedia Commons...<br><strong>${esc(card.manufacturer + ' ' + card.model)}</strong>`;
+  await findPhoto(card, 0);
+  if (token === requestToken && cards[index] && cards[index].id === card.id) renderImage(card);
+}
+async function findPhoto(card, offset = 0) {
+  const query = encodeURIComponent(card.photoQuery || `${card.manufacturer} ${card.model} helicopter`);
+  const api = `https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=10&gsroffset=${offset}&gsrsearch=${query}&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=1400`;
+  try {
+    const response = await fetch(api, { mode: 'cors' });
+    const data = await response.json();
+    const pages = Object.values(data.query?.pages || {}).filter(p => p.imageinfo && p.imageinfo[0] && (p.imageinfo[0].thumburl || p.imageinfo[0].url));
+    if (!pages.length) throw new Error('No images found');
+    const preferred = pages.find(p => !/logo|patch|emblem|badge|map|diagram|svg/i.test(p.title)) || pages[0];
+    const info = preferred.imageinfo[0];
+    images[card.id] = { url: info.thumburl || info.url, page: info.descriptionurl || 'https://commons.wikimedia.org/', offset };
+  } catch (error) {
+    images[card.id] = { url: '', page: '', offset, error: String(error) };
+    $('photo').innerHTML = `No photo found yet.<br><strong>${esc(card.manufacturer + ' ' + card.model)}</strong><br>Try Find New Photo.`;
+  }
+  saveImages();
+}
+function nextCard() { historyStack.push(index); index = weightedRandomIndex(); flipped = false; render(); }
+function previousCard() { if (historyStack.length) { index = historyStack.pop(); flipped = false; render(); } }
+function mark(status) { cards[index].status = status; saveCards(); nextCard(); }
+$('card').addEventListener('click', () => { flipped = !flipped; render(); });
+$('flip').addEventListener('click', (e) => { e.stopPropagation(); flipped = !flipped; render(); });
+$('next').addEventListener('click', nextCard);
+$('shuffle').addEventListener('click', nextCard);
+$('prev').addEventListener('click', previousCard);
+$('practice').addEventListener('click', () => mark('practice'));
+$('know').addEventListener('click', () => mark('know'));
+$('newpic').addEventListener('click', async () => {
+  const card = cards[index];
+  const oldOffset = images[card.id]?.offset || 0;
+  delete images[card.id];
+  saveImages();
+  $('photo').innerHTML = 'Finding another real photo...';
+  await findPhoto(card, oldOffset + 10);
+  render();
+});
+$('preload').addEventListener('click', async () => {
+  for (let i = 0; i < cards.length; i++) {
+    if (!images[cards[i].id]?.url) { $('stats').innerHTML = `<span>Preloading ${i+1}/${cards.length}</span>`; await findPhoto(cards[i], 0); }
+  }
+  render();
+  alert('Photo preload complete.');
+});
+$('reset').addEventListener('click', () => { cards = cards.map(c => ({ ...c, status: 'learning' })); saveCards(); render(); });
+$('edit').addEventListener('click', () => {
+  const editor = $('editor');
+  if (editor.style.display === 'block') {
+    try { cards = JSON.parse(editor.value); saveCards(); index = 0; historyStack = []; flipped = false; editor.style.display = 'none'; render(); }
+    catch (error) { alert('JSON error: ' + error.message); }
+  } else { editor.value = JSON.stringify(cards, null, 2); editor.style.display = 'block'; }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.target.id === 'editor') return;
+  if (e.code === 'Space') { e.preventDefault(); flipped = !flipped; render(); }
+  if (e.key === 'ArrowRight') nextCard();
+  if (e.key === 'ArrowLeft') previousCard();
+  if (e.key.toLowerCase() === 'n') mark('practice');
+  if (e.key.toLowerCase() === 'k') mark('know');
+});
+if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {})); }
+render();
+</script>
+</body>
+</html>
