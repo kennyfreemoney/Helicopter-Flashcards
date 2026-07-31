@@ -1,6 +1,29 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-store"><title>US Helicopter Flash Cards v9</title><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-store"><title>US Helicopter Flash Cards v9.1</title><style>
 :root{--bg:#0f172a;--panel:#111827;--panel2:#1f2937;--text:#f8fafc;--muted:#94a3b8;--border:#334155;--blue:#0369a1;--red:#991b1b;--green:#166534;--yellow:#92400e;--accent:#38bdf8}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#1e293b,var(--bg));color:var(--text);font-family:Arial,Helvetica,sans-serif;padding:14px}.app{max-width:980px;margin:auto}header{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}h1{font-size:22px;margin:8px 0}.stats{display:flex;gap:6px;flex-wrap:wrap}.stats span{border:1px solid var(--border);border-radius:999px;padding:6px 10px;color:#cbd5e1;background:#0f172acc;font-size:13px}.card{background:#111827dd;border:1px solid var(--border);border-radius:22px;overflow:hidden;box-shadow:0 20px 60px #0008;min-height:590px}.photo{height:455px;background:#020617;display:flex;align-items:center;justify-content:center;position:relative;color:var(--muted);text-align:center;padding:20px}.photo img{width:100%;height:100%;object-fit:contain;display:block}.spinner{width:58px;height:58px;border:6px solid rgba(255,255,255,.16);border-top-color:#38bdf8;border-radius:50%;animation:spin .85s linear infinite;margin:0 auto 16px}@keyframes spin{to{transform:rotate(360deg)}}.photo-arrow{position:absolute;top:50%;transform:translateY(-50%);width:56px;height:132px;border-radius:18px;border:1px solid #ffffff22;background:#0008;color:white;font-size:40px;font-weight:900;display:flex;align-items:center;justify-content:center;z-index:3}.photo-arrow.left{left:10px}.photo-arrow.right{right:10px}.source{position:absolute;right:10px;bottom:10px;background:#000b;color:#dbeafe;padding:6px 9px;border-radius:999px;text-decoration:none;font-size:12px;border:1px solid #ffffff22}.front,.back{padding:22px;text-align:center;cursor:pointer}.front{color:var(--muted)}.back{display:none}.flipped .front{display:none}.flipped .back{display:block}.name{font-size:clamp(30px,5vw,52px);font-weight:900;line-height:1.05}.nick{font-size:clamp(20px,3vw,32px);color:var(--accent);margin:10px 0}.detail{color:#cbd5e1;font-size:17px}.buttons,.tools{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}button{background:var(--panel2);color:white;border:1px solid var(--border);border-radius:12px;padding:15px 10px;font-weight:800;cursor:pointer;font-size:16px}button:active{transform:scale(.98)}.blue{background:var(--blue)}.red{background:var(--red)}.green{background:var(--green)}.yellow{background:var(--yellow)}textarea{display:none;width:100%;height:250px;background:#020617;color:white;border:1px solid var(--border);border-radius:12px;padding:12px;margin-top:10px;font-family:Consolas,monospace}.note{color:#cbd5e1;border:1px dashed var(--border);border-radius:14px;padding:12px;margin-top:10px;line-height:1.45;background:#0f172aaa}@media(max-width:720px){body{padding:10px}.card{min-height:500px}.photo{height:340px}.buttons,.tools{grid-template-columns:1fr 1fr}#next{grid-column:span 2}.photo-arrow{width:50px;height:118px;font-size:34px}}
-</style></head><body><main class="app"><header><h1>US Helicopter Flash Cards <span style="font-size:12px;color:#38bdf8">v9</span></h1><div class="stats" id="stats"></div></header><section class="card" id="card"><div class="photo" id="photo"></div><div class="front" id="frontReveal">Tap here to reveal answer</div><div class="back" id="back"></div></section><section class="buttons"><button id="next" class="blue">Next</button><button id="right" class="green">Right</button><button id="wrong" class="red">Wrong</button></section><section class="tools"><button id="reset" class="yellow">Reset / Shuffle New Round</button><button id="preload">Preload Photos</button><button id="edit">Edit Deck</button></section><textarea id="editor"></textarea><div class="note"><strong>v9:</strong> Current/in-use or used within roughly the last 25 years. H-60 variants are one Black Hawk card, H-6 variants are one Little Bird card, MD 500/520/530 are one MD 500 Series card, and Bell 206/206L are combined. No weighting: every card appears once per round.</div></main><script>
+</style></head><body><main class="app"><header><h1>US Helicopter Flash Cards <span style="font-size:12px;color:#38bdf8">v9.1</span></h1><div class="stats" id="stats"></div></header><section class="card" id="card"><div class="photo" id="photo"></div><div class="front" id="frontReveal">Tap here to reveal answer</div><div class="back" id="back"></div></section><section class="buttons"><button id="next" class="blue">Next</button><button id="right" class="green">Right</button><button id="wrong" class="red">Wrong</button></section><section class="tools"><button id="reset" class="yellow">Reset / Shuffle New Round</button><button id="preload">Preload Photos</button><button id="edit">Edit Deck</button></section><textarea id="editor"></textarea><div class="note"><strong>v9.1:</strong> Current/in-use or used within roughly the last 25 years. H-60 variants are one Black Hawk card, H-6 variants are one Little Bird card, MD 500/520/530 are one MD 500 Series card, and Bell 206/206L are combined. No weighting: every card appears once per round.</div></main>
+<script>
+(function clearOldServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations()
+      .then(function(registrations) {
+        registrations.forEach(function(registration) {
+          registration.unregister();
+        });
+      })
+      .catch(function() {});
+  }
+  if ('caches' in window) {
+    caches.keys()
+      .then(function(keys) {
+        keys.forEach(function(key) {
+          caches.delete(key);
+        });
+      })
+      .catch(function() {});
+  }
+})();
+</script>
+<script>
 const DEFAULT_CARDS = [
   {
     "id": "sikorsky-h-60-family",
